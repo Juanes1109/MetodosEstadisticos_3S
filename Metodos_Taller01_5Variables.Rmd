@@ -1,0 +1,583 @@
+---
+title: "taller"
+author: "Juan Esteban Montenegro Beltrán"
+date: '2022-08-18'
+# output: html_document
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(tidyr)
+library(tidyverse)
+library(modeest)
+library(descr)
+library(psych)
+
+```
+
+# Conjunto de datos
+
+Usaremos la tabla Diamonds de la biblioteca ggplot2.
+
+Esta tabla de datos tiene 53930 filas y 10 variables
+
+```{r}
+str(diamonds)
+```
+
+
+```{r}
+head(diamonds)
+```
+
+Crear un columna con números aleatorios y escoger las primeras 350 observaciones para tener nuestros datos de muestra diamonds_20220718.
+
+```{r}
+
+diamonds_20220718 <- diamonds
+
+diamonds_20220718$fila <- runif(53940, min = 0, max = 1000)
+
+diamonds_20220718 <- diamonds_20220718[order(diamonds_20220718$fila), ]
+
+diamonds_20220718 <- diamonds_20220718[1:350, ]
+
+diamonds_20220718
+
+```
+
+
+#  Variable cualitativa nominal
+### 7 - Análisis de la variable cualitativa nominal
+
+Usaremos la variable color
+
+```{r}
+
+tabla_vcn <- as.data.frame(table(diamonds_20220718$color))
+tabla_vcn
+
+tabla_vcn2 <- transform(tabla_vcn,
+          Rel = round(prop.table(tabla_vcn$Freq), 3),
+          Porc = (round(prop.table(tabla_vcn$Freq), 3)) * 100,
+          Ang = (round(prop.table(tabla_vcn$Freq), 2)) * 360
+          )
+
+tabla_vcn2
+
+```
+
+### 8 - Diagrama de barras
+
+Colores tomados de <https://bookdown.org/hneth/ds4psy/D-5-apx-colors-define-use-custom.html>
+
+```{r}
+
+colores <- c("black","grey","firebrick","forestgreen","gold","steelblue","blue")
+
+ggplot(diamonds_20220718, aes(x = color)) +
+  geom_bar(fill = colores) +
+  labs(title = "Diagrama para la variable color",
+       x = "vcn",
+       y = "Frecuencia") +
+  theme_dark()
+
+
+```
+
+
+<!-- ```{r, echo=FALSE} -->
+<!--  -->
+<!-- ggplot(diamonds_20220718, aes(x = color, fill = color)) + -->
+<!--   geom_bar() + -->
+<!--   labs(title = "Diagrama para la variable color", -->
+<!--        y = "Frecuncia") -->
+<!--  -->
+<!--  -->
+<!-- ``` -->
+
+### 9 - Diagrama circular
+
+Uso el mismo vector de coloes del punto 8
+
+```{r}
+
+porcentaje <- tabla_vcn2$Porc
+etiqueta <- paste(porcentaje, "%", sep = " ")
+leyendas <- c("D", "E", "F", "G", "H", "I", "J")
+
+pie(porcentaje,
+    labels = etiqueta,
+    clockwise = TRUE,
+    col = colores,
+    main = "Gráfico de torta")
+
+legend("topright", leyendas, cex = 0.5, fill = colores)
+
+```
+
+
+
+
+
+#  Variable cualitativa ordinal
+### 7 - Análisis de la variable cualitativa ordinal
+
+Usaremos la variable cut
+
+```{r}
+
+tabla_vco <- as.data.frame(table(diamonds_20220718$cut))
+tabla_vco
+
+tabla_vco2 <- transform(tabla_vco,
+          Rel = round(prop.table(tabla_vco$Freq), 3),
+          Porc = (round(prop.table(tabla_vco$Freq), 3)) * 100,
+          Ang = (round(prop.table(tabla_vco$Freq), 2)) * 360
+          )
+
+tabla_vco2
+
+```
+
+### 8 - Diagrama de barras
+
+Colores tomados de <https://bookdown.org/hneth/ds4psy/D-5-apx-colors-define-use-custom.html>
+
+```{r}
+
+colores <- c("black","grey","firebrick","forestgreen","gold")
+
+ggplot(diamonds_20220718, aes(x = cut)) +
+  geom_bar(fill = colores) +
+  labs(title = "Diagrama para la variable color",
+       x = "vco",
+       y = "Frecuencia") +
+  theme_dark()
+
+
+```
+
+
+<!-- ```{r, echo=FALSE} -->
+<!--  -->
+<!-- ggplot(diamonds_20220718, aes(x = color, fill = color)) + -->
+<!--   geom_bar() + -->
+<!--   labs(title = "Diagrama para la variable color", -->
+<!--        y = "Frecuncia") -->
+<!--  -->
+<!--  -->
+<!-- ``` -->
+
+### 9 - Diagrama circular
+
+Uso el mismo vector de coloes del punto 8
+
+```{r}
+
+porcentaje <- tabla_vco2$Porc
+etiqueta <- paste(porcentaje, "%", sep = " ")
+leyendas <- c("Fair", "Good", "Very Good", "Premium", 
+"Ideal")
+
+pie(porcentaje,
+    labels = etiqueta,
+    clockwise = TRUE,
+    col = colores,
+    main = "Gráfico de torta")
+
+legend("topright", leyendas, cex = 0.5, fill = colores)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#  Variable cuantitativa discreta
+### 12 - Análisis de la variable cuantitativa discreta
+
+Usaremos la variable price
+
+```{r}
+
+tabla_vcd <- as.data.frame(table(diamonds_20220718$price))
+head(tabla_vcd)
+
+tabla_vcd2 <- transform(tabla_vcd,
+          Rel = round(prop.table(tabla_vcd$Freq), 3),
+          RelAcum = round(cumsum(prop.table(tabla_vcd$Freq)), 3)
+          )
+
+tail(tabla_vcd2)
+
+```
+### 13 - Diagrama tallos y hojas
+
+No se puede visualizar completo debido a la extensión de los números
+
+```{r}
+
+stem(diamonds_20220718$price)
+
+```
+
+
+### 14 - Histograma
+
+```{r}
+
+ggplot(diamonds_20220718, aes(x = price)) +
+  geom_histogram(fill = "#4682B4", color = "black", birwidth = 1) +
+  labs(title = "Histograma - Price",
+       x = "vcd - price",
+       y = "Frecuencia") +
+  theme_dark()
+
+
+```
+
+### 15 - Curva de densidad
+
+```{r}
+
+ggplot(diamonds_20220718, aes(x = price)) +
+  geom_density() +
+  labs(title = "Curva de densidad - Price",
+       x = "vcd - price",
+       y = "Frecuencia Relativa") +
+  theme_dark()
+
+
+```
+
+### 16 - Diagrama de caja y bigotes
+
+```{r}
+
+ggplot(diamonds_20220718, aes(x = price)) +
+  stat_boxplot(geom = "errorbar", width = 0.5) +
+  geom_boxplot(fill = "#EEBD91",
+               outlier.colour = "red",
+               alpha = 0.9) +
+  ggtitle("Caja y bigotes - Price") +
+       xlab("") +
+  coord_flip()
+
+
+```
+
+### Estadísticas básicas
+
+
+```{r}
+
+# Media
+mean(diamonds_20220718$price)
+# Mediana
+median(diamonds_20220718$price)
+# Moda
+mfv(diamonds_20220718$price)
+# Rango
+range(diamonds_20220718$price)
+# Varianza
+var(diamonds_20220718$price)
+# desviación estandard
+sd(diamonds_20220718$price)
+
+# Cuartiles
+Q1 <- quantile(diamonds_20220718$price, 0.25)
+Q1
+Q2 <- quantile(diamonds_20220718$price, 0.50)
+Q2
+Q3 <- quantile(diamonds_20220718$price, 0.75)
+Q3
+
+# Rango intercuartílico
+ric <- Q3 - Q1
+ric
+
+# Límite inferior
+Linf <- Q1 - 1.5*ric
+Linf
+
+# Límite superior
+Lsup <- Q3 + 1.5*ric
+Lsup
+
+# Asimetría
+skew(diamonds_20220718$price, 0.25)
+
+# Curtosis
+kurtosi(diamonds_20220718$price)
+
+```
+
+
+
+
+#  Variable continua 1
+### 12 - Análisis de la variable continua 1
+
+Usaremos la variable depth
+
+
+<!-- ```{r} -->
+
+<!-- tabla_vcd <- as.data.frame(table(diamonds_20220718$depth)) -->
+<!-- head(tabla_vcd) -->
+
+<!-- tabla_vcd2 <- transform(tabla_vcd, -->
+<!--           Rel = round(prop.table(tabla_vcd$Freq), 3), -->
+<!--           RelAcum = round(cumsum(prop.table(tabla_vcd$Freq)), 3) -->
+<!--           ) -->
+
+<!-- tail(tabla_vcd2) -->
+
+<!-- ``` -->
+<!-- ### 13 - Diagrama tallos y hojas -->
+
+<!-- No se puede visualizar completo debido a la extensión de los números -->
+
+<!-- ```{r} -->
+
+<!-- stem(diamonds_20220718$depth) -->
+
+<!-- ``` -->
+
+
+### 14 - Histograma
+
+```{r}
+
+ggplot(diamonds_20220718, aes(x = depth)) +
+  geom_histogram(fill = "#4682B4", color = "black", birwidth = 1) +
+  labs(title = "Histograma - depth",
+       x = "vcd - depth",
+       y = "Frecuencia") +
+  theme_dark()
+
+
+```
+
+### 15 - Curva de densidad
+
+```{r}
+
+ggplot(diamonds_20220718, aes(x = depth)) +
+  geom_density() +
+  labs(title = "Curva de densidad - depth",
+       x = "vcd - depth",
+       y = "Frecuencia Relativa") +
+  theme_dark()
+
+
+```
+
+### 16 - Diagrama de caja y bigotes
+
+```{r}
+
+ggplot(diamonds_20220718, aes(x = depth)) +
+  stat_boxplot(geom = "errorbar", width = 0.5) +
+  geom_boxplot(fill = "#EEBD91",
+               outlier.colour = "red",
+               alpha = 0.9) +
+  ggtitle("Caja y bigotes - depth") +
+       xlab("") +
+  coord_flip()
+
+
+```
+
+### Estadísticas básicas
+
+
+```{r}
+
+# Media
+mean(diamonds_20220718$depth)
+# Mediana
+median(diamonds_20220718$depth)
+# Moda
+mfv(diamonds_20220718$depth)
+# Rango
+range(diamonds_20220718$depth)
+# Varianza
+var(diamonds_20220718$depth)
+# desviación estandard
+sd(diamonds_20220718$depth)
+
+# Cuartiles
+Q1 <- quantile(diamonds_20220718$depth, 0.25)
+Q1
+Q2 <- quantile(diamonds_20220718$depth, 0.50)
+Q2
+Q3 <- quantile(diamonds_20220718$depth, 0.75)
+Q3
+
+# Rango intercuartílico
+ric <- Q3 - Q1
+ric
+
+# Límite inferior
+Linf <- Q1 - 1.5*ric
+Linf
+
+# Límite superior
+Lsup <- Q3 + 1.5*ric
+Lsup
+
+# Asimetría
+skew(diamonds_20220718$depth, 0.25)
+
+# Curtosis
+kurtosi(diamonds_20220718$depth)
+
+```
+
+
+
+
+#  Variable continua 2
+### 12 - Análisis de la variable continua 2
+
+Usaremos la variable carat
+
+
+<!-- ```{r} -->
+
+<!-- tabla_vcd <- as.data.frame(table(diamonds_20220718$carat)) -->
+<!-- head(tabla_vcd) -->
+
+<!-- tabla_vcd2 <- transform(tabla_vcd, -->
+<!--           Rel = round(prop.table(tabla_vcd$Freq), 3), -->
+<!--           RelAcum = round(cumsum(prop.table(tabla_vcd$Freq)), 3) -->
+<!--           ) -->
+
+<!-- tail(tabla_vcd2) -->
+
+<!-- ``` -->
+<!-- ### 13 - Diagrama tallos y hojas -->
+
+<!-- No se puede visualizar completo debido a la extensión de los números -->
+
+<!-- ```{r} -->
+
+<!-- stem(diamonds_20220718$carat) -->
+
+<!-- ``` -->
+
+
+### 14 - Histograma
+
+```{r}
+
+ggplot(diamonds_20220718, aes(x = carat)) +
+  geom_histogram(fill = "#4682B4", color = "black", birwidth = 1) +
+  labs(title = "Histograma - carat",
+       x = "vcd - carat",
+       y = "Frecuencia") +
+  theme_dark()
+
+
+```
+
+### 15 - Curva de densidad
+
+```{r}
+
+ggplot(diamonds_20220718, aes(x = carat)) +
+  geom_density() +
+  labs(title = "Curva de densidad - carat",
+       x = "vcd - carat",
+       y = "Frecuencia Relativa") +
+  theme_dark()
+
+
+```
+
+### 16 - Diagrama de caja y bigotes
+
+```{r}
+
+ggplot(diamonds_20220718, aes(x = carat)) +
+  stat_boxplot(geom = "errorbar", width = 0.5) +
+  geom_boxplot(fill = "#EEBD91",
+               outlier.colour = "red",
+               alpha = 0.9) +
+  ggtitle("Caja y bigotes - carat") +
+       xlab("") +
+  coord_flip()
+
+
+```
+
+### Estadísticas básicas
+
+
+```{r}
+
+# Media
+mean(diamonds_20220718$carat)
+# Mediana
+median(diamonds_20220718$carat)
+# Moda
+mfv(diamonds_20220718$carat)
+# Rango
+range(diamonds_20220718$carat)
+# Varianza
+var(diamonds_20220718$carat)
+# desviación estandard
+sd(diamonds_20220718$carat)
+
+# Cuartiles
+Q1 <- quantile(diamonds_20220718$carat, 0.25)
+Q1
+Q2 <- quantile(diamonds_20220718$carat, 0.50)
+Q2
+Q3 <- quantile(diamonds_20220718$carat, 0.75)
+Q3
+
+# Rango intercuartílico
+ric <- Q3 - Q1
+ric
+
+# Límite inferior
+Linf <- Q1 - 1.5*ric
+Linf
+
+# Límite superior
+Lsup <- Q3 + 1.5*ric
+Lsup
+
+# Asimetría
+skew(diamonds_20220718$carat, 0.25)
+
+# Curtosis
+kurtosi(diamonds_20220718$carat)
+
+```
+
+
